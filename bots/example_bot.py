@@ -5,6 +5,7 @@ from src.map import TileInfo, RobotInfo
 import random
 import numpy as np
 
+
 class BotPlayer(Player):
     """
     Players will write a child class that implements (notably the play_turn method)
@@ -53,27 +54,27 @@ class BotPlayer(Player):
         """
 
         if (not self.getValue(x + 2, y) or
-                not self.getValue(x + 2, y - 1) or
-                not self.getValue(x + 2, y + 1)) and game_state.can_move_robot(rname, Direction.DOWN):
+            not self.getValue(x + 2, y - 1) or
+            not self.getValue(x + 2, y + 1)) and game_state.can_move_robot(rname, Direction.DOWN):
             self.set_explored_true(x + 1, y, game_state)
             print(rname, " going down")
             game_state.move_robot(rname, Direction.DOWN)
         elif (not self.getValue(x - 2, y) or
-                not self.getValue(x - 2, y - 1) or
-                not self.getValue(x - 2, y + 1)) and game_state.can_move_robot(rname, Direction.UP):
+              not self.getValue(x - 2, y - 1) or
+              not self.getValue(x - 2, y + 1)) and game_state.can_move_robot(rname, Direction.UP):
             self.set_explored_true(x - 1, y, game_state)
             print(rname, " going up")
             game_state.move_robot(rname, Direction.UP)
         elif (not self.getValue(x, y + 2) or
-                not self.getValue(x - 1, y + 2) or
-                not self.getValue(x + 1, y + 2)) and game_state.can_move_robot(rname, Direction.RIGHT):
+              not self.getValue(x - 1, y + 2) or
+              not self.getValue(x + 1, y + 2)) and game_state.can_move_robot(rname, Direction.RIGHT):
             self.set_explored_true(x, y + 1, game_state)
             print(rname, " going right")
             game_state.move_robot(rname, Direction.RIGHT)
 
         elif (not self.getValue(x, y - 2) or
-                not self.getValue(x - 1, y - 2) or
-                not self.getValue(x + 1, y - 2)) and game_state.can_move_robot(rname, Direction.LEFT):
+              not self.getValue(x - 1, y - 2) or
+              not self.getValue(x + 1, y - 2)) and game_state.can_move_robot(rname, Direction.LEFT):
             self.set_explored_true(x, y - 1, game_state)
             print(rname, " going left")
             game_state.move_robot(rname, Direction.LEFT)
@@ -92,7 +93,10 @@ class BotPlayer(Player):
             self.set_explored_true(x - 1, y + 1, game_state)
             game_state.move_robot(rname, Direction.UP_RIGHT)
         else:
-            # random move anywhere
+            """
+            If no cell in immediate vicinity is unexplored,
+            move to the nearest unexplored cell
+            """
             all_dirs = [dir for dir in Direction]
             for d in all_dirs:
                 if game_state.can_move_robot(rname, d):
@@ -118,6 +122,7 @@ class BotPlayer(Player):
     def __init__(self, team: Team):
         self.deposit_tiles = {}
         self.terraformable_tiles = {}
+        self.unexplored_tiles = []
         self.team = team
         self.explored = None
         self.first_time = True
@@ -132,6 +137,11 @@ class BotPlayer(Player):
         height, width = len(ginfo.map), len(ginfo.map[0])
         if self.explored is None:
             self.explored = np.ndarray(dtype=bool, shape=(height, width))
+            for i in range(0, height):
+                for j in range(0, width):
+                    tile = ginfo.map[i][j]
+                    if tile is not None:
+                        self.unexplored_tiles.append((i, j))
 
         # print info about the game
         print(f"Turn {ginfo.turn}, team {ginfo.team}")
@@ -193,5 +203,3 @@ class BotPlayer(Player):
                 # action if possible
                 if game_state.can_robot_action(rname):
                     game_state.robot_action(rname)
-
-
